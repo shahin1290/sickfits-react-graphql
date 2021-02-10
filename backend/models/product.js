@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
   name: {
@@ -8,12 +8,17 @@ const schema = new mongoose.Schema({
   },
   description: {
     type: String,
-    minlength: 5
+    minlength: 5,
   },
-  photo: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ProductImage'
-  }]
-})
+  price: {
+    type: Number,
+  },
+  photos: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Photo',
+    },
+  ],
+});
 
-module.exports = mongoose.model('Product', schema)
+module.exports = mongoose.model('Product', schema);

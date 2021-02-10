@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 module.exports = mongoose.model(
-  'ProductImage',
+  'Photo',
   mongoose.Schema({
     imageUrl: String,
     product: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product'
-    }
+      ref: 'Product',
+    },
   })
 );

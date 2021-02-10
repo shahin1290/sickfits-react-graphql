@@ -2,7 +2,7 @@ require('dotenv').config();
 const { ApolloServer, gql } = require('apollo-server');
 const mongoose = require('mongoose');
 const Product = require('./models/product');
-const ProductImage = require('./models/productImage');
+const Photo = require('./models/photo');
 const cloudinary = require('cloudinary');
 
 const MONGODB_URI = process.env.DATABASE_URL;
@@ -22,30 +22,6 @@ mongoose
   .catch((error) => {
     console.log('error connection to MongoDB:', error.message);
   });
-
-/* const image = new ProductImage({
-    imageUrl: 'http://res.cloudinary.com/wesbos/image/upload/v1576791335/sick-fits-keystone/5dfbed262849d7961377c2c0.jpg',
-    product: '6020301160d78b45cf38b217',
-  }) */
-
-/* Product.findOneAndUpdate(
-  { name: 'shoe' },
-  { photo: '6020301160d78b45cf38b217' },
-  null,
-  function (err, docs) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log('image saved!');
-      mongoose.connection.close();
-    }
-  }
-); */
-
-/* image.save().then((result) => {
-  console.log('image saved!');
-  mongoose.connection.close();
-}); */
 
 const uploadFile = async (file) => {
   // The Upload scalar return a a promise
@@ -82,12 +58,14 @@ const typeDefs = gql`
   type Photo {
     imageUrl: String!
     id: ID!
+    product: Product!
   }
 
   type Product {
     name: String!
     description: String!
-    photo: Photo
+    price: Int!
+    photos: [Photo!]!
     id: ID!
   }
 
@@ -103,38 +81,56 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createProduct(name: String!, description: String!, photo: Upload): Product
+    createProduct(
+      name: String!
+      description: String!
+      price: Int!
+      photo: Upload
+    ): Product
     uploadPhoto(photo: Upload!): Photo!
   }
 `;
 
-const photos = [];
-
 const resolvers = {
   Query: {
     allProducts: (root, args) => {
-      return Product.find({});
+      return Product.find().populate('photos');
     },
     allPhotos: () => {
-      return photos;
+      return Photo.find({}).populate('product');
     },
   },
   Mutation: {
     createProduct: async (root, args) => {
-      const file = await uploadFile(args.photo);
-      const newProductImage = new ProductImage({ imageUrl: file.secure_url });
-      await newProductImage.save();
-      const product = new Product({
+      const newProduct = new Product({
         name: args.name,
         description: args.description,
+        price: args.price,
       });
 
-      product.photo.push(newProductImage);
+      const createdProduct = await newProduct.save();
 
-      const createdProduct = await product.save();
+      const file = await uploadFile(args.photo);
 
-      return createdProduct;
-    }
+      const newPhoto = new Photo({
+        imageUrl: file.secure_url,
+        product: createdProduct._id,
+      });
+
+      await newPhoto.save();
+
+      const findProuductAndPhoto = Product.findByIdAndUpdate(
+        createdProduct._id,
+        { $addToSet: { photos: newPhoto._id } },
+        { new: true }
+      );
+
+      //product.photo.push(newPhoto);
+
+      //const createdProduct = await product.save();
+
+      return findProuductAndPhoto;
+    },
   },
 };
 

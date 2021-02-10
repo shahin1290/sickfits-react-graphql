@@ -10,11 +10,18 @@ const CREATE_PRODUCT_MUTATION = gql`
     $name: String!
     $description: String!
     $photo: Upload
+    $price: Int!
   ) {
-    createProduct(name: $name, description: $description, photo: $photo) {
+    createProduct(
+      name: $name
+      description: $description
+      price: $price
+      photo: $photo
+    ) {
       id
       description
       name
+      price
     }
   }
 `;
@@ -24,6 +31,7 @@ export default function CreateProduct() {
     image: '',
     name: 'Nice Shoes',
     description: 'These are the best shoes!',
+    price: 50,
   });
   const [createProduct, { loading, error }] = useMutation(
     CREATE_PRODUCT_MUTATION,
