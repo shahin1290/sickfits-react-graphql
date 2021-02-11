@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, gql, UserInputError } = require('apollo-server');
 const mongoose = require('mongoose');
 const Product = require('./models/product');
 const Photo = require('./models/photo');
@@ -97,6 +97,8 @@ const typeDefs = gql`
       description: String
       price: Int
     ): Product
+
+    deleteProduct(id: ID!): Product
   }
 `;
 
@@ -154,6 +156,16 @@ const resolvers = {
       }
 
       return product;
+    },
+
+    deleteProduct: async (root, args) => {
+      try {
+        return await Product.findByIdAndDelete(args.id);
+      } catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args,
+        });
+      }
     },
   },
 };
