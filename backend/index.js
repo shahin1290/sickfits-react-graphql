@@ -65,7 +65,7 @@ const typeDefs = gql`
     name: String!
     description: String!
     price: Int!
-    photos: [Photo!]!
+    photos: [Photo]
     id: ID!
   }
 
@@ -88,7 +88,15 @@ const typeDefs = gql`
       price: Int!
       photos: Upload
     ): Product
+
     uploadPhoto(photo: Upload!): Photo!
+
+    updateProduct(
+      id: ID!
+      name: String
+      description: String
+      price: Int
+    ): Product
   }
 `;
 
@@ -100,7 +108,7 @@ const resolvers = {
     allPhotos: () => {
       return Photo.find({}).populate('product');
     },
-    product: (root, args) => Product.findById(args.id).populate('photos')
+    product: (root, args) => Product.findById(args.id).populate('photos'),
   },
   Mutation: {
     createProduct: async (root, args) => {
@@ -121,17 +129,31 @@ const resolvers = {
 
       await newPhoto.save();
 
-      const findProuductAndPhoto = Product.findByIdAndUpdate(
+      const updatedProduct = Product.findByIdAndUpdate(
         createdProduct._id,
         { $addToSet: { photos: newPhoto._id } },
         { new: true }
       );
 
-      //product.photo.push(newPhoto);
+      return updatedProduct;
+    },
+    updateProduct: async (root, args) => {
+      const { id, name, description, price } = args;
 
-      //const createdProduct = await product.save();
+      const product = await Product.findById(id);
+      product.name = name;
+      product.description = description;
+      product.price = price;
 
-      return findProuductAndPhoto;
+      try {
+        await product.save();
+      } catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args,
+        });
+      }
+
+      return product;
     },
   },
 };
