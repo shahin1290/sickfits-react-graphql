@@ -78,6 +78,7 @@ const typeDefs = gql`
   type Query {
     allProducts: [Product!]!
     allPhotos: [Photo]
+    product(id: ID!): Product!
   }
 
   type Mutation {
@@ -85,7 +86,7 @@ const typeDefs = gql`
       name: String!
       description: String!
       price: Int!
-      photo: Upload
+      photos: Upload
     ): Product
     uploadPhoto(photo: Upload!): Photo!
   }
@@ -99,6 +100,7 @@ const resolvers = {
     allPhotos: () => {
       return Photo.find({}).populate('product');
     },
+    product: (root, args) => Product.findById(args.id).populate('photos')
   },
   Mutation: {
     createProduct: async (root, args) => {
