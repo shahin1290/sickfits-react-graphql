@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-module.exports = mongoose.model(
+const Photo =  mongoose.model(
   'Photo',
   mongoose.Schema({
     imageUrl: String,
@@ -10,3 +10,5 @@ module.exports = mongoose.model(
     },
   })
 );
+
+module.exports = {Photo}

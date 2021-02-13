@@ -5,13 +5,15 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    maxLength: 20,
   },
   description: {
     type: String,
-    minlength: 5,
+    minlength: 10,
   },
   price: {
     type: Number,
+    required: true,
   },
   photos: [
     {
@@ -21,4 +23,5 @@ const schema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model('Product', schema);
+const Product = mongoose.model('Product', schema);
+module.exports = { Product };
