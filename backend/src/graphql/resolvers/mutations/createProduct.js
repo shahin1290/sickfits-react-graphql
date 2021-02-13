@@ -16,6 +16,7 @@ module.exports = async (_, args, { models }) => {
 
     const newPhoto = new models.Photo({
       imageUrl: file.secure_url,
+      cloudinary_id: file.public_id,
       product: createdProduct._id,
     });
 
