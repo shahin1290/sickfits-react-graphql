@@ -51,6 +51,6 @@ module.exports = gql`
 
     registerUser(name: String!, email: String!, password: String!): User
 
-    loginUser(name: String!, email: String!, password: String!): Token
+    loginUser(email: String!, password: String!): Token
   }
 `;

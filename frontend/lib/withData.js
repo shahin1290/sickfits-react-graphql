@@ -6,6 +6,11 @@ import withApollo from 'next-with-apollo';
 import { endpoint, prodEndpoint } from '../config';
 
 function createClient({ headers, initialState }) {
+  let token;
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('sickfits-user-token');
+  }
+
   return new ApolloClient({
     link: ApolloLink.from([
       onError(({ graphQLErrors, networkError }) => {
@@ -24,7 +29,10 @@ function createClient({ headers, initialState }) {
       createUploadLink({
         uri: process.env.NODE_ENV === 'development' ? endpoint : prodEndpoint,
         // pass the headers along from this request. This enables SSR with logged in state
-        headers,
+        headers: {
+          ...headers,
+          authorization: token ? `bearer ${token}` : null,
+        },
       }),
     ]),
     cache: new InMemoryCache({
